@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name nodemcu)(type KiCad)(uri "$(KIPRJMOD)/nodemcu.pretty")(options "")(descr ""))
+)

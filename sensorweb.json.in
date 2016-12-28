@@ -1,0 +1,8 @@
+{
+  "coordinates": [1.00, 2.00],
+  "api": {
+    "datastreams": "https://api.bewrosnes.org/v1.0/Datastreams",
+    "observations": "https://api.bewrosnes.org/v1.0/Observations",
+    "fingerprint": "37 49 BF 29 A8 F6 B6 D0 55 32 6F 6A 4F 8E 1E 74 B4 80 B0 D3"
+  }
+}

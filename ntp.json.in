@@ -1,0 +1,5 @@
+{
+  "server": "pool.ntp.org",
+  "tzoffset": 0,
+  "daylight": false
+}
