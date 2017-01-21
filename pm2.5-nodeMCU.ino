@@ -14,6 +14,7 @@ uint32 pm2_5 = UINT32_MAX;
 uint32 pm10  = UINT32_MAX;
 
 unsigned int sleepWakeCycles = 0;
+unsigned long rtcSystemTime  = 0;
 
 #include "debug.h"
 #include "config.h"
@@ -43,6 +44,20 @@ void ntpSyncEventHandler(NTPSyncEvent_t error) {
       serialUdpDebug("NTPSyncEvent: set ntpInitialSync");
       ntpInitialSync = true;
     }
+
+    // If we receive a ntpSyncEvent for sleepWakeCycles=1 then we
+    // are there to compute slowdown factor.
+    if (sleepWakeCycles == sleepWakeCyclesSlowDownCompute) {
+      double actualSystemTime   = NTP.getLastNTPSync();
+      double actualRuntime      = millis() / 1000.0;
+      double expectedSystemTime = rtcSystemTime + actualRuntime;
+      double deltaTime = expectedSystemTime - actualSystemTime;
+      slowDownFactor = 1.0 + (deltaTime / execInterval);
+
+      serialUdpDebug("NTPSyncEvent: actualRuntime=" + String(actualRuntime));
+      serialUdpDebug("NTPSyncEvent: actualSystemTime=" + date_ISO8601(actualSystemTime) + " -- expectedSystemTime=" + date_ISO8601(expectedSystemTime));
+      serialUdpDebug("NTPSyncEvent: deltaTime=" + String(deltaTime, 5) + " => slowDownFactor=" + String(slowDownFactor, 5));
+    }
   }
 }
 
@@ -54,7 +69,12 @@ void wifiHasIpAddress(WiFiEventStationModeGotIP evt) {
   serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig.ntpServer + ", " + ntpConfig.ntpTZOffset + ", " + ntpConfig.ntpDayLight + ")");
 
   NTP.onNTPSyncEvent(ntpSyncEventHandler);
-  NTP.setInterval(ntpFirstSync, ntpInterval);
+  // For re-sync force a 5 secs interval.
+  if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
+    NTP.setInterval(5, ntpInterval); 
+  } else {
+    NTP.setInterval(ntpFirstSync, ntpInterval);
+  }
 }
 
 void wifiConnected(WiFiEventStationModeConnected evt) {
@@ -81,10 +101,15 @@ void setup() {
   const rst_info * resetInfo = system_get_rst_info();
   if (resetInfo->reason == REASON_DEEP_SLEEP_AWAKE) {
     if (readTimeFromRTC()) {
+      // If we wake up from deep sleep AND sleepWakeCycles is one
+      // it means we did a first NTP sync. Let's do a second one.
       if (sleepWakeCycles < forceResync) {
-        ntpInitialSync  = true;
+        if (sleepWakeCycles > sleepWakeCyclesSlowDownCompute) {
+          ntpInitialSync  = true;
+        }
       } else {
         sleepWakeCycles = 0;
+        slowDownFactor  = 1.0;
       }
     }
   }
@@ -126,7 +151,7 @@ void loop() {
   // If we get nothing, go to sleep. Let's hope it is a transient issue.
   String timeNow = date_ISO8601(now());
   if (!ntpInitialSync && (ntpErrors < 3)) {
-    serialUdpDebug("Loop: no NTP initial sync, waiting ... ntpErrors=" + String(ntpErrors));
+    serialUdpDebug("Loop: no NTP initial sync, waiting ... sleepWakeCycles=" + String(sleepWakeCycles) + " ntpErrors=" + String(ntpErrors));
     delay(1250);
     return;
   }
@@ -156,7 +181,10 @@ void loop() {
   // Ensure that we have something within range of [1; execInterval]
   nextInterval = MAX(1, MIN(nextInterval, execInterval));
 
-  serialUdpDebug("Loop: deepSleep: nextInterval=" + String(nextInterval) + "; executionTime=" + String(executionTime) + "; deepSleep(" + String(nextInterval * slowDownFactor) + ")");
+  serialUdpDebug("Loop: deepSleep: nextInterval=" + String(nextInterval) +
+                 "; executionTime=" + String(executionTime) +
+                 " ; slowDownFactor=" + String(slowDownFactor, 5) +
+                 "; deepSleep(" + String(nextInterval * slowDownFactor) + ")");
 
   // Write time to RTC only if we could get some valid.
   // e.g., no ntp works during first boot of the system

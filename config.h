@@ -11,7 +11,10 @@ const unsigned int execInterval = 300;
 const unsigned int pmsWarmUp    = 10;
 
 // Force resync every 30 mins, value in number if cycles
-const unsigned int forceResync  = (2 * SECS_PER_HOUR) / execInterval;
+const unsigned int forceResync  = (3 * SECS_PER_HOUR) / execInterval;
+
+// What is the limit in sleepWakeCycles to use to compute slow down factor
+const unsigned int sleepWakeCyclesSlowDownCompute = 1;
 
 const unsigned int ntpFirstSync = 15;
 const unsigned int ntpInterval  = 1800;
@@ -38,7 +41,8 @@ const unsigned int ntpInterval  = 1800;
 // every 30 cycles (i.e., 30min, from forceResync above) shows
 // good enough accuracy, drifting less than one second between
 // each resync ; without, drifting would be ~1min every 10 min.
-const double slowDownFactor     = 1.0549; // for execInterval=60, use 1.0425
+// const double slowDownFactor     = 1.0549; // for execInterval=60, use 1.0425
+double slowDownFactor = 1.0;
 
 #define MIN(x,y) ((x <= y) ? x : y)
 #define MAX(x,y) ((x <= y) ? y : x)

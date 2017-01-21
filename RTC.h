@@ -12,7 +12,8 @@ struct sysTime {
   uint32_t     crc32;
   time_t       timeAtSleep;  // Store the current time_t when we went to sleep
   double       timeSleeping; // Store the amount of time (secs) we went to sleep
-  unsigned int cycles;       // Counter of wake/sleep cycles
+  unsigned int cycles;         // Counter of wake/sleep cycles
+  double       slowDownFactor; // How much does time slows down while asleep
 };
 
 uint32_t calculateCRC32(const uint8_t *data, size_t length)
@@ -37,9 +38,10 @@ uint32_t calculateCRC32(const uint8_t *data, size_t length)
 // writeTimeToRTC should be the very last call just before going into deepSleep()
 void writeTimeToRTC(time_t currentTime, double sleepTime) {
   struct sysTime saver;
-  saver.timeAtSleep  = currentTime;
-  saver.timeSleeping = sleepTime;
-  saver.cycles       = sleepWakeCycles;
+  saver.timeAtSleep    = currentTime;
+  saver.timeSleeping   = sleepTime;
+  saver.cycles         = sleepWakeCycles;
+  saver.slowDownFactor = slowDownFactor;
   saver.crc32 = calculateCRC32(((uint8_t*) &saver) + 4, sizeof(saver) - 4);
 
   DEBUG_SERIAL("RTC: writing: timeAtSleep=" + String(saver.timeAtSleep));
@@ -87,6 +89,8 @@ bool readTimeFromRTC() {
   double correctTime = reader.timeAtSleep + reader.timeSleeping + adjustement;
   setTime((time_t)round(correctTime));
   sleepWakeCycles = (reader.cycles) + 1;
+  rtcSystemTime   = round(correctTime);
+  slowDownFactor  = reader.slowDownFactor;
 
   DEBUG_SERIAL("RTC: setting correctTime=" + String(correctTime) + " and sleepWakeCycles=" + sleepWakeCycles);
   return true;
