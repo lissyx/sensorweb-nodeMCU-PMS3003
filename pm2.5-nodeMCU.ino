@@ -20,7 +20,11 @@ unsigned long rtcSystemTime  = 0;
 #include "config.h"
 #include "LEDs.h"
 #include "PMS3003.h"
+
+// used by date_ISO8601() in SensorWeb.h
+NtpConfig* ntpConfig;
 #include "SensorWeb.h"
+
 #include "RTC.h"
 
 bool ntpInitialSync = false;
@@ -64,9 +68,8 @@ void ntpSyncEventHandler(NTPSyncEvent_t error) {
 void wifiHasIpAddress(WiFiEventStationModeGotIP evt) {
   serialUdpIntDebug("Got IP: " + evt.ip.toString());
 
-  NtpConfig ntpConfig;
-  NTP.begin(ntpConfig.ntpServer, ntpConfig.ntpTZOffset, ntpConfig.ntpDayLight);
-  serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig.ntpServer + ", " + ntpConfig.ntpTZOffset + ", " + ntpConfig.ntpDayLight + ")");
+  NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
+  serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
 
   NTP.onNTPSyncEvent(ntpSyncEventHandler);
   // For re-sync force a 5 secs interval.
@@ -125,6 +128,8 @@ void setup() {
 
   // put PMS3003 into standby for now
   power_pms3003(false);
+
+  ntpConfig = new NtpConfig();
 
   hasIpEvent      = WiFi.onStationModeGotIP(wifiHasIpAddress);
   connectEvent    = WiFi.onStationModeConnected(wifiConnected);

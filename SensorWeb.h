@@ -1,10 +1,13 @@
 #ifndef PM25_NODEMCU_SENSORWEB_H
 #define PM25_NODEMCU_SENSORWEB_H
 
+// Will rely on ntpConfig->ntpTZOffset to compute proper UTC time
+// e.g. 2017-01-26 at 15:00:00 Paris Time, it is 2017-01-26T15:00:00.000Z == 2017-01-26T15:00:00.000+01:00
 String date_ISO8601(time_t date) {
   // 2016-11-18T11:04:15.790Z
   char iso8601[24];
-  sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000Z", year(date), month(date), day(date), hour(date), minute(date), second(date));
+  time_t utcDate = date - (SECS_PER_HOUR * ntpConfig->ntpTZOffset);
+  sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000Z", year(utcDate), month(utcDate), day(utcDate), hour(utcDate), minute(utcDate), second(utcDate));
   return String(iso8601);
 }
 
