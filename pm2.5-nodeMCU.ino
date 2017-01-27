@@ -68,14 +68,11 @@ void ntpSyncEventHandler(NTPSyncEvent_t error) {
 void wifiHasIpAddress(WiFiEventStationModeGotIP evt) {
   serialUdpIntDebug("Got IP: " + evt.ip.toString());
 
-  NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
-  serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
-
-  NTP.onNTPSyncEvent(ntpSyncEventHandler);
-  // For re-sync force a 5 secs interval.
+  // Only schedule NTP sync when we do need it.
   if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
-    NTP.setInterval(5, ntpInterval); 
-  } else {
+    NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
+    serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
+    NTP.onNTPSyncEvent(ntpSyncEventHandler);
     NTP.setInterval(ntpFirstSync, ntpInterval);
   }
 }
@@ -87,7 +84,10 @@ void wifiConnected(WiFiEventStationModeConnected evt) {
 void wifiDisconnected(WiFiEventStationModeDisconnected evt) {
   DEBUG_SERIAL("Disconnected from SSID: " + evt.ssid);
   DEBUG_SERIAL("Reason: " + evt.reason);
-  NTP.stop();
+
+  if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
+    NTP.stop();
+  }
 }
 
 void setup() {

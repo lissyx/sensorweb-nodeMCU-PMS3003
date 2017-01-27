@@ -16,7 +16,7 @@ const unsigned int forceResync  = (3 * SECS_PER_HOUR) / execInterval;
 // What is the limit in sleepWakeCycles to use to compute slow down factor
 const unsigned int sleepWakeCyclesSlowDownCompute = 1;
 
-const unsigned int ntpFirstSync = 15;
+const unsigned int ntpFirstSync = 5;
 const unsigned int ntpInterval  = 1800;
 
 // Experimental slowdown factor, as it looks like ESP.deepSleep()
