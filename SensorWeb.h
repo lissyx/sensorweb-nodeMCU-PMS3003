@@ -177,7 +177,7 @@ String pushObservation(String iotId, String date, unsigned int pm2_5) {
   } else {
     String _error = extractErrMsg(payload);
     String _errno = extractErrno(payload);
-    serialUdpDebug("HTTP:OS: Code " + String(rc) + " with errno=" + _errno + ": '" + _error + "'");
+    serialUdpDebug("HTTP:OS: Code " + String(rc) + " (" + http.errorToString(rc) + ") " + " with errno=" + _errno + ": '" + _error + "'");
   }
   // TODO: Handle error code, if errno 102 "Invalid association. Datastream with id X not found", then
   // remove iotid file and restart the sensor.
