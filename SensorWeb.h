@@ -104,8 +104,9 @@ String getDataStream() {
 
   HTTPClient http;
   http.begin(SensorWebConfig::getInstance()->apiDatastreams, SensorWebConfig::getInstance()->apiFingerprint);
-  http.addHeader("Content-Type", "application/json");
   http.addHeader("Cache-Control", "no-cache");
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Connection", "close");
   int rc = http.POST(jsonPayload);
 
   serialUdpDebug("HTTP:DS: Code " + String(rc));
@@ -153,8 +154,9 @@ String pushObservation(String iotId, String date, unsigned int pm2_5) {
 
   HTTPClient http;
   http.begin(SensorWebConfig::getInstance()->apiObservations, SensorWebConfig::getInstance()->apiFingerprint);
-  http.addHeader("Content-Type", "application/json");
   http.addHeader("Cache-Control", "no-cache");
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Connection", "close");
   int rc = http.POST(jsonPayload);
 
   String payload = http.getString();
