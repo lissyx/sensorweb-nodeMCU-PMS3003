@@ -11,6 +11,7 @@ class AirCastingSession : public JsonConfig
 
     AirCastingSession();
     bool writeToFile();
+    bool removeFile();
 
   private:
     void parseConfig(String conf);
@@ -67,6 +68,10 @@ bool AirCastingSession::writeToFile() {
   serialUdpDebug("AirCastingSession: WriteJSON: " + jsonPayload);
 
   return safelyWriteNewFile(AIRCASTING_SESSION, jsonPayload);
+}
+
+bool AirCastingSession::removeFile() {
+  return safelyRemoveFile(AIRCASTING_SESSION);
 }
 
 #endif // PM25_NODEMCU_AIRCASTINGSESSION_H

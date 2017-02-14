@@ -212,6 +212,12 @@ bool AirCasting::push(String date, unsigned int pm2_5) {
   if (rc > 0) {
     if (rc == HTTP_CODE_OK) {
       return true;
+    } else if (rc == HTTP_CODE_BAD_REQUEST) {
+      serialUdpDebug("AC:push: invalid session.");
+      // if we get HTTP/1.1 400 then it is likely the session has died.
+      // Remove file, we will re-authenticate and create a new session.
+      bool del = this->sess->removeFile();
+      serialUdpDebug("AC:push: removed session file: " + String(del));
     }
   }
 
