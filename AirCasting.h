@@ -93,9 +93,9 @@ String AirCasting::makeFixedSession(String uuid) {
   session["uuid"]       = uuid;
   session["streams"]    = session.createNestedObject("streams");
   session["notes"]      = session.createNestedObject("notes");
-  session["title"]      = "PM2.5 Test";
-  session["tag_list"]   = "pm2.5";
-  session["descrition"] = "PM2.5 autonomous Sensor, based on PMS3003";
+  session["title"]      = getSessionTitle();
+  session["tag_list"]   = getSessionTags();
+  session["descrition"] = getSessionDescription();
   session["calibration"]  = 0;
   session["contribute"]   = false;
   session["os_version"]   = "ESP8266 0.1";
