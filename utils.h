@@ -60,10 +60,14 @@ String getSensorName() {
   return "NodeMCU-PMS3003";
 }
 
-String getSensorPackageName() {
+String prettifyMac() {
   String mac = WiFi.macAddress();
   mac.replace(":", "");
-  return getSensorName() + ":" + mac;
+  return mac;
+}
+
+String getSensorPackageName() {
+  return getSensorName() + ":" + prettifyMac();
 }
 
 String getMeasureType() {
@@ -91,7 +95,7 @@ String getSessionTags() {
 }
 
 String getSessionTitle() {
-  return "PMS3003-PM2.5";
+  return "PMS3003-PM2.5:" + prettifyMac();
 }
 
 #endif // PM25_NODEMCU_UTILS_H
