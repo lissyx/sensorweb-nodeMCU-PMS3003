@@ -51,7 +51,7 @@ void WifiConfig::parseConfig(String conf) {
   DynamicJsonBuffer jsonBuffer;
   JsonArray& confRoot = jsonBuffer.parseArray(conf.c_str());
 
-  DEBUG_SERIAL("WifiConfig: JSON: " + conf);
+  // DEBUG_SERIAL("WifiConfig: JSON: " + conf);
 
   if (!confRoot.success()) {
     DEBUG_SERIAL("WifiConfig: Parsing failure");
@@ -68,7 +68,7 @@ void WifiConfig::parseConfig(String conf) {
 
     WifiCreds _creds(net.get<String>("SSID"), net.get<String>("PASS"));
     this->creds.push_back(_creds);
-    DEBUG_SERIAL("WifiConfig: added " + _creds.ssid() + " as " + String(i));
+    // DEBUG_SERIAL("WifiConfig: added " + _creds.ssid() + " as " + String(i));
   }
   
   return;

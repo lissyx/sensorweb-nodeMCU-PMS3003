@@ -176,7 +176,7 @@ void loop() {
 
     // Send even if value is 0 ; it just means sensor detected nothing.
     if(pm2_5 < UINT32_MAX && sessionUUID.length() > 0) {
-      String sent = ac.push(timeNow, pm2_5);
+      bool sent = ac.push(timeNow, pm2_5);
       serialUdpDebug("NTP: " + timeNow + " PM2.5: " + String(pm2_5) + " UUID:" + sessionUUID + " sent:" + sent);
     }
   } else {

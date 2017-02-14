@@ -16,7 +16,7 @@ class AirCasting
   public:
     AirCasting();
     String getSessionUUID();
-    String push(String date, unsigned int pm2_5);
+    bool push(String date, unsigned int pm2_5);
 
   private:
     AirCastingConfig* conf;
@@ -26,7 +26,9 @@ class AirCasting
     String generateUUID();
 
     String createPayload(String target, String content);
-    String fixedSession(String uuid);
+    String makeFixedSession(String uuid);
+    String makeMeasurement(String date, unsigned int pm2_5);
+
     String createFixedSession(String uuid);
 
     String extractJsonField(String field, String httpPayload);
@@ -65,7 +67,6 @@ String AirCasting::authenticate() {
 
   String payload = http.getString();
   serialUdpDebug("AC:Auth: Code " + String(rc));
-  serialUdpDebug("AC:Auth: REPLY: " + payload);
   if (rc > 0) {
     if (rc == HTTP_CODE_OK) {
       String token = this->extractJsonField("authentication_token", payload);
@@ -81,10 +82,11 @@ String AirCasting::createPayload(String target, String content) {
   content.replace('"', '\"');
   root[target] = content;
   String jsonPayload; root.printTo(jsonPayload);
+  // DEBUG_SERIAL("AirCasting::createPayload: jsonPayload=" + jsonPayload);
   return jsonPayload;
 }
 
-String AirCasting::fixedSession(String uuid) {
+String AirCasting::makeFixedSession(String uuid) {
   DynamicJsonBuffer jsonBuffer;
 
   JsonObject& session   = jsonBuffer.createObject();
@@ -125,11 +127,10 @@ String AirCasting::createFixedSession(String uuid) {
   http.addHeader("Connection", "close");
   http.setAuthorization(this->sess->token.c_str(), "X");
 
-  int rc = http.POST(this->createPayload("session", this->fixedSession(uuid)));
+  int rc = http.POST(this->createPayload("session", this->makeFixedSession(uuid)));
 
   String payload = http.getString();
   serialUdpDebug("AC:FixedSession: Code " + String(rc));
-  serialUdpDebug("AC:FixedSession: REPLY: " + payload);
   if (rc > 0) {
     if (rc == HTTP_CODE_OK) {
       serialUdpDebug("AC:FixedSession: UUID: " + uuid);
@@ -166,8 +167,55 @@ String AirCasting::getSessionUUID() {
   return "";
 }
 
-String AirCasting::push(String date, unsigned int pm2_5) {
-  return "";
+String AirCasting::makeMeasurement(String date, unsigned int pm2_5) {
+  DynamicJsonBuffer jsonBuffer;
+
+  JsonObject& data = jsonBuffer.createObject();
+  data["session_uuid"]           = this->sess->uuid;
+  data["sensor_package_name"]    = getSensorPackageName();
+  data["sensor_name"]            = getSensorName();
+  data["measurement_type"]       = getMeasureType();
+  data["measurement_short_type"] = getMeasureShortType();
+  data["unit_symbol"]            = getUnitSymbol();
+  data["unit_name"]              = getUnitName();
+  data["threshold_very_low"]     = 0;
+  data["threshold_low"]          = 25;
+  data["threshold_medium"]       = 50;
+  data["threshold_high"]         = 75;
+  data["threshold_very_high"]    = 100;
+
+  JsonArray& measurements = data.createNestedArray("measurements");
+  JsonObject& measure     = measurements.createNestedObject();
+  measure["latitude"]        = this->conf->coordinates[0];
+  measure["longitude"]       = this->conf->coordinates[1];
+  measure["time"]            = date;
+  measure["timezone_offset"] = 0;
+  measure["milliseconds"]    = 0;
+  measure["value"]           = pm2_5;
+  measure["measured_value"]  = pm2_5;
+
+  SERIALIZED_CONTENT(data);
+}
+
+bool AirCasting::push(String date, unsigned int pm2_5) {
+  HTTPClient http;
+  http.begin(this->conf->data);
+  http.addHeader("Cache-Control", "no-cache");
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Connection", "close");
+  http.setAuthorization(this->sess->token.c_str(), "X");
+
+  int rc = http.POST(this->createPayload("data", this->makeMeasurement(date, pm2_5)));
+
+  String payload = http.getString();
+  serialUdpDebug("AC:push: Code " + String(rc));
+  if (rc > 0) {
+    if (rc == HTTP_CODE_OK) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 #endif // PM25_NODEMCU_AIRCASTING_H

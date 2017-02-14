@@ -39,7 +39,7 @@ void AirCastingSession::parseConfig(String conf) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& confRoot = jsonBuffer.parseObject(conf.c_str());
 
-  DEBUG_SERIAL("AirCastingSession: JSON: " + conf);
+  // DEBUG_SERIAL("AirCastingSession: JSON: " + conf);
 
   if (!confRoot.success()) {
     DEBUG_SERIAL("AirCastingSession: Parsing failure");

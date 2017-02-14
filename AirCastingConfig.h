@@ -47,7 +47,7 @@ void AirCastingConfig::parseConfig(String conf) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& confRoot = jsonBuffer.parseObject(conf.c_str());
 
-  DEBUG_SERIAL("AirCastingConfig: JSON: " + conf);
+  // DEBUG_SERIAL("AirCastingConfig: JSON: " + conf);
 
   if (!confRoot.success()) {
     DEBUG_SERIAL("AirCastingConfig: Parsing failure");
