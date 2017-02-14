@@ -47,14 +47,15 @@ double slowDownFactor = 1.0;
 #define MIN(x,y) ((x <= y) ? x : y)
 #define MAX(x,y) ((x <= y) ? y : x)
 
-#define WIFI_CREDENTIALS "/wifi.json"
-#define NTP_CONFIG       "/ntp.json"
-#define SENSORWEB_CONFIG "/sensorweb.json"
-#define IOTID_FILE       "/iotid"
+#define WIFI_CREDENTIALS  "/wifi.json"
+#define NTP_CONFIG        "/ntp.json"
+// #define SENSORWEB_CONFIG "/sensorweb.json"
+#define AIRCASTING_CONFIG  "/aircasting.json"
+#define AIRCASTING_SESSION "/aircasting.sess"
 
 #include "JsonConfig.h"
 #include "NtpConfig.h"
-#include "SensorWebConfig.h"
+// #include "SensorWebConfig.h"
 #include "WifiConfig.h"
 
 #endif // PM25_NODEMCU_CONFIG_H

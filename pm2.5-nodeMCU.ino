@@ -20,11 +20,13 @@ unsigned long rtcSystemTime  = 0;
 #include "config.h"
 #include "LEDs.h"
 #include "PMS3003.h"
+// #include "SensorWeb.h"
 
-// used by date_ISO8601() in SensorWeb.h
+// used by date_ISO8601() in utils.h
 NtpConfig* ntpConfig;
-#include "SensorWeb.h"
+#include "utils.h"
 
+#include "AirCasting.h"
 #include "RTC.h"
 
 bool ntpInitialSync = false;
@@ -129,7 +131,7 @@ void setup() {
   // put PMS3003 into standby for now
   power_pms3003(false);
 
-  ntpConfig = new NtpConfig();
+  ntpConfig        = new NtpConfig();
 
   hasIpEvent      = WiFi.onStationModeGotIP(wifiHasIpAddress);
   connectEvent    = WiFi.onStationModeConnected(wifiConnected);
@@ -163,18 +165,19 @@ void loop() {
 
   // Do not try to collect or send data if we have not received any NTP sync event.
   if (ntpErrors < 3) {
-    String iotId = ensureIotId();
+    AirCasting ac;
+    String sessionUUID = ac.getSessionUUID();
 
-    serialUdpDebug("IoT-ID: " + iotId);
+    serialUdpDebug("SessionUUID: " + sessionUUID);
     serialUdpDebug("NTP: " + timeNow);
 
     // Read values from the PMS3003 connected sensor
     collect_pms3003_sensor();
 
     // Send even if value is 0 ; it just means sensor detected nothing.
-    if(pm2_5 < UINT32_MAX && iotId.length() > 0) {
-      String sent = pushObservation(iotId, timeNow, pm2_5);
-      serialUdpDebug("NTP: " + timeNow + " PM2.5: " + String(pm2_5) + " @iot.id:" + iotId + " sent:" + sent);
+    if(pm2_5 < UINT32_MAX && sessionUUID.length() > 0) {
+      String sent = ac.push(timeNow, pm2_5);
+      serialUdpDebug("NTP: " + timeNow + " PM2.5: " + String(pm2_5) + " UUID:" + sessionUUID + " sent:" + sent);
     }
   } else {
     serialUdpDebug("Loop: too many NTP errors. Aborting.");

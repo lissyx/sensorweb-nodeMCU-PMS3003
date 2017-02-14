@@ -1,0 +1,13 @@
+{
+  "coordinates": [1.00, 2.00],
+  "location": "Paris",
+  "api": {
+    "login": "http://www.aircasting.org/api/user.json",
+    "session": "http://www.aircasting.org/api/realtime/sessions.json",
+    "data": "http://www.aircasting.org/api/realtime/measurements.json"
+  },
+  "credentials": {
+    "user": "",
+    "pass": ""
+  }
+}
