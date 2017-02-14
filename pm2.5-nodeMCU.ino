@@ -23,7 +23,6 @@ unsigned long rtcSystemTime  = 0;
 // #include "SensorWeb.h"
 
 // used by date_ISO8601() in utils.h
-NtpConfig* ntpConfig;
 #include "utils.h"
 
 #include "AirCasting.h"
@@ -72,6 +71,7 @@ void wifiHasIpAddress(WiFiEventStationModeGotIP evt) {
 
   // Only schedule NTP sync when we do need it.
   if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
+    NtpConfig* ntpConfig = NtpConfig::getInstance();
     NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
     serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
     NTP.onNTPSyncEvent(ntpSyncEventHandler);
@@ -130,8 +130,6 @@ void setup() {
 
   // put PMS3003 into standby for now
   power_pms3003(false);
-
-  ntpConfig        = new NtpConfig();
 
   hasIpEvent      = WiFi.onStationModeGotIP(wifiHasIpAddress);
   connectEvent    = WiFi.onStationModeConnected(wifiConnected);

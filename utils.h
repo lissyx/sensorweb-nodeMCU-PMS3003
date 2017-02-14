@@ -6,7 +6,7 @@
 String date_ISO8601(time_t date) {
   // 2016-11-18T11:04:15.790Z
   char iso8601[24];
-  time_t utcDate = date - (SECS_PER_HOUR * ntpConfig->ntpTZOffset);
+  time_t utcDate = date - (SECS_PER_HOUR * NtpConfig::getInstance()->ntpTZOffset);
   sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000Z", year(utcDate), month(utcDate), day(utcDate), hour(utcDate), minute(utcDate), second(utcDate));
   return String(iso8601);
 }

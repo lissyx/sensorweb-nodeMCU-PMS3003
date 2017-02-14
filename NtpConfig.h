@@ -7,6 +7,9 @@ class NtpConfig : public JsonConfig
     String ntpServer;
     int    ntpTZOffset;
     bool   ntpDayLight;
+
+    static NtpConfig* getInstance();
+
     NtpConfig();
 
   private:
@@ -20,6 +23,17 @@ NtpConfig::NtpConfig() {
   } else {
     return;
   }
+}
+
+
+NtpConfig* NtpConfig::getInstance() {
+  static NtpConfig* _instance;
+
+  if (!_instance) {
+    _instance = new NtpConfig();
+  }
+
+  return _instance;
 }
 
 void NtpConfig::parseConfig(String conf) {
