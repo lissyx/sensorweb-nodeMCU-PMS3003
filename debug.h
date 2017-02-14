@@ -31,10 +31,12 @@ void sendDebugMessage(String msg, bool withDelay = true) {
   // debugging should be done client side with:
   // nc -n -k -4 -v -l -u -p 8899 | ts "%Y-%m-%d %H:%M:%S"
 
+  String _msg = WiFi.hostname() + ": " + msg;
+
   WiFiUDP udp;
   udp.beginPacket(DEBUG_IP_TARGET, DEBUG_IP_PORT);
   if (withDelay) delay(1);
-  udp.write(msg.c_str());
+  udp.write(_msg.c_str());
   if (withDelay) delay(1);
   udp.write('\n');
   if (withDelay) delay(1);
