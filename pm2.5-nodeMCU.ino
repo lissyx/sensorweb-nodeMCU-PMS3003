@@ -15,6 +15,7 @@ uint32 pm10  = UINT32_MAX;
 
 unsigned int sleepWakeCycles = 0;
 unsigned long rtcSystemTime  = 0;
+unsigned long startupMillis = 0;
 
 #include "debug.h"
 #include "config.h"
@@ -30,7 +31,8 @@ unsigned long rtcSystemTime  = 0;
 
 bool ntpInitialSync = false;
 unsigned int ntpErrors = 0;
-unsigned long startupMillis = 0;
+double ntpStartTime = 0;
+double ntpWaitTime  = 0;
 
 void ntpSyncEventHandler(NTPSyncEvent_t error) {
   if (error) {
@@ -46,20 +48,22 @@ void ntpSyncEventHandler(NTPSyncEvent_t error) {
     ntpErrors = 0;
     serialUdpDebug("NTPSyncEvent: " + NTP.getTimeDateString(NTP.getLastNTPSync()));
     if (!ntpInitialSync) {
-      serialUdpDebug("NTPSyncEvent: set ntpInitialSync");
+      // serialUdpDebug("NTPSyncEvent: set ntpInitialSync");
       ntpInitialSync = true;
     }
+
+    ntpWaitTime = millis() - ntpStartTime;
 
     // If we receive a ntpSyncEvent for sleepWakeCycles=1 then we
     // are there to compute slowdown factor.
     if (sleepWakeCycles == sleepWakeCyclesSlowDownCompute) {
       double actualSystemTime   = NTP.getLastNTPSync();
-      double actualRuntime      = millis() / 1000.0;
+      double actualRuntime      = getCurrentExecutionTime();
       double expectedSystemTime = rtcSystemTime + actualRuntime;
-      double deltaTime = expectedSystemTime - actualSystemTime;
+      double deltaTime = expectedSystemTime - actualSystemTime + (bootTime / 1000.0) + (ntpWaitTime / 1000.0);
       slowDownFactor = 1.0 + (deltaTime / execInterval);
 
-      serialUdpDebug("NTPSyncEvent: actualRuntime=" + String(actualRuntime));
+      serialUdpDebug("NTPSyncEvent: actualRuntime=" + String(actualRuntime) + " -- bootTime=" + String(bootTime));
       serialUdpDebug("NTPSyncEvent: actualSystemTime=" + date_ISO8601(actualSystemTime) + " -- expectedSystemTime=" + date_ISO8601(expectedSystemTime));
       serialUdpDebug("NTPSyncEvent: deltaTime=" + String(deltaTime, 5) + " => slowDownFactor=" + String(slowDownFactor, 5));
     }
@@ -74,6 +78,7 @@ void wifiHasIpAddress(WiFiEventStationModeGotIP evt) {
     NtpConfig* ntpConfig = NtpConfig::getInstance();
     NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
     serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
+    ntpStartTime = millis();
     NTP.onNTPSyncEvent(ntpSyncEventHandler);
     NTP.setInterval(ntpFirstSync, ntpInterval);
   }
@@ -181,7 +186,7 @@ void loop() {
     serialUdpDebug("Loop: too many NTP errors. Aborting.");
   }
 
-  double executionTime = ((double)millis() - (double)startupMillis) / 1000.0;
+  double executionTime = getCurrentExecutionTime();
   double nextInterval  = ((double)execInterval - (double)executionTime) * 1.0;
 
   // Ensure that we have something within range of [1; execInterval]

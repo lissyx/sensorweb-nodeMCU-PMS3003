@@ -65,9 +65,8 @@ bool readTimeFromRTC() {
     return false;
   }
 
-  // It is reported that deepsleep takes ~250ms and wakeup ~75ms
-  const unsigned long bootTime = 250 + 75;
-  unsigned long wakeUpTime     = millis();
+  
+  unsigned long wakeUpTime = millis();
 
   /* Add extra time to account for wakeup time of the device
    * (experimental value, estimated from drift of seconds on a serie

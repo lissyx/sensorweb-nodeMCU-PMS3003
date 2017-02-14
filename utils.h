@@ -1,6 +1,9 @@
 #ifndef PM25_NODEMCU_UTILS_H
 #define PM25_NODEMCU_UTILS_H
 
+// It is reported that deepsleep takes ~250ms and wakeup ~75ms
+const unsigned long bootTime = 250 + 75;
+
 // Will rely on ntpConfig->ntpTZOffset to compute proper UTC time
 // e.g. 2017-01-26 at 15:00:00 Paris Time, it is 2017-01-26T15:00:00.000Z == 2017-01-26T15:00:00.000+01:00
 String date_ISO8601(time_t date) {

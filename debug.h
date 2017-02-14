@@ -20,6 +20,10 @@ void printDebugMessage(String msg) {
 #define dbgMsg(s)    sendDebugMessage(s, true);
 #define intDbgMsg(s) sendDebugMessage(s, false);
 
+double getCurrentExecutionTime() {
+  return (((double)millis() - (double)startupMillis) / 1000.0);
+}
+
 #define DEBUG_ENABLED (strlen(DEBUG_IP_TARGET) > 0 && DEBUG_IP_PORT > 0)
 void sendDebugMessage(String msg, bool withDelay = true) {
   if (!DEBUG_ENABLED) {
