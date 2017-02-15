@@ -6,11 +6,22 @@ const unsigned long bootTime = 250 + 75;
 
 // Will rely on ntpConfig->ntpTZOffset to compute proper UTC time
 // e.g. 2017-01-26 at 15:00:00 Paris Time, it is 2017-01-26T15:00:00.000Z == 2017-01-26T15:00:00.000+01:00
-String date_ISO8601(time_t date) {
-  // 2016-11-18T11:04:15.790Z
-  char iso8601[24];
-  time_t utcDate = date - (SECS_PER_HOUR * NtpConfig::getInstance()->ntpTZOffset);
-  sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000Z", year(utcDate), month(utcDate), day(utcDate), hour(utcDate), minute(utcDate), second(utcDate));
+String date_ISO8601(time_t date, bool asUTC = false) {
+  char iso8601[30];
+
+  if (asUTC) {
+    // 2016-11-18T11:04:15.790Z
+    time_t utcDate = date - (SECS_PER_HOUR * NtpConfig::getInstance()->ntpTZOffset);
+    sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000Z", year(utcDate), month(utcDate), day(utcDate), hour(utcDate), minute(utcDate), second(utcDate));
+  } else {
+    // 2016-11-18T11:04:15.790+XX:YY
+    char tzSign = (NtpConfig::getInstance()->ntpTZOffset < 0) ? '-' : '+';
+    signed int tzOffsetMin = (NtpConfig::getInstance()->ntpTZOffset) * SECS_PER_MIN;
+    unsigned int tzH = abs(floor(tzOffsetMin / SECS_PER_MIN));
+    unsigned int tzM = abs(floor(tzOffsetMin % SECS_PER_MIN));
+    sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000%c%02d:%02d", year(date), month(date), day(date), hour(date), minute(date), second(date), tzSign, tzH, tzM);
+  }
+
   return String(iso8601);
 }
 

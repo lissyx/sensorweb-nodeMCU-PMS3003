@@ -5,7 +5,7 @@ class NtpConfig : public JsonConfig
 {
   public:
     String ntpServer;
-    int    ntpTZOffset;
+    double ntpTZOffset;
     bool   ntpDayLight;
 
     static NtpConfig* getInstance();
@@ -47,7 +47,7 @@ void NtpConfig::parseConfig(String conf) {
   }
 
   this->ntpServer   = confRoot.get<String>("server");
-  this->ntpTZOffset = confRoot.get<int>("tzoffset");
+  this->ntpTZOffset = confRoot.get<double>("tzoffset");
   this->ntpDayLight = confRoot.get<bool>("daylight");
 
   return;
