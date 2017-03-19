@@ -1,13 +1,13 @@
 #ifndef PM25_NODEMCU_DEBUG_H
 #define PM25_NODEMCU_DEBUG_H
 
-// #define DEBUG_SERIAL(m) printDebugMessage(m)
-// const char* DEBUG_IP_TARGET = "192.168.1.15";
-// const int   DEBUG_IP_PORT   = 8899;
+#define DEBUG_SERIAL(m) printDebugMessage(m)
+const char* DEBUG_IP_TARGET = "239.0.0.1";
+const int   DEBUG_IP_PORT   = 8899;
 
-#define DEBUG_SERIAL(m)
-const char* DEBUG_IP_TARGET = "";
-const int   DEBUG_IP_PORT   = 0;
+// #define DEBUG_SERIAL(m)
+// const char* DEBUG_IP_TARGET = "";
+// const int   DEBUG_IP_PORT   = 0;
 
 void printDebugMessage(String msg) {
   Serial.println(msg);
@@ -33,19 +33,22 @@ void sendDebugMessage(String msg, bool withDelay = true) {
 
   // If we have some debug target, let us open plain UDP and spit out
   // debugging should be done client side with:
-  // nc -n -k -4 -v -l -u -p 8899 | ts "%Y-%m-%d %H:%M:%S"
+  // socat STDIO UDP4-RECV:8899,ip-add-memberhsip=239.0.0.1:eth0 | ts "%Y-%m-%d %H:%M:%S"
 
-  String _msg = WiFi.hostname() + ": " + msg;
+  String _msg = WiFi.hostname() + ": [" + String(getCurrentExecutionTime(), 5) + "] " + msg;
 
   WiFiUDP udp;
-  udp.beginPacket(DEBUG_IP_TARGET, DEBUG_IP_PORT);
-  if (withDelay) delay(1);
-  udp.write(_msg.c_str());
-  if (withDelay) delay(1);
-  udp.write('\n');
-  if (withDelay) delay(1);
-  udp.endPacket();
-  if (withDelay) delay(1);
+  IPAddress remote;
+  if (WiFi.hostByName(DEBUG_IP_TARGET, remote)) {
+    udp.beginPacketMulticast(remote, DEBUG_IP_PORT, WiFi.localIP(), 3);
+    if (withDelay) delay(1);
+    udp.write(_msg.c_str());
+    if (withDelay) delay(1);
+    udp.write('\n');
+    if (withDelay) delay(1);
+    udp.endPacket();
+    if (withDelay) delay(1);
+  }
 
   // delay(1) would help sending UDP packets as documented on:
   // https://github.com/esp8266/Arduino/issues/1009#issuecomment-189666095
