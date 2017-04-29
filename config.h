@@ -3,6 +3,10 @@
 
 // #define ENABLE_LEDS 1
 
+#define VERSION String("1.0")
+#define BUILD_DATE String(__DATE__)
+#define BUILD_TIME String(__TIME__)
+
 // How often (in secs) should we perform measures
 const unsigned int execInterval = 300;
 

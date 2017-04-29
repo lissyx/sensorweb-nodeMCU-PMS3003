@@ -71,7 +71,7 @@ void ntpSyncEventHandler(NTPSyncEvent_t error) {
 }
 
 void wifiHasIpAddress(WiFiEventStationModeGotIP evt) {
-  serialUdpIntDebug("Got IP: " + evt.ip.toString());
+  serialUdpIntDebug("UP: " + VERSION + ":" + (BUILD_DATE + " " + BUILD_TIME) + "@" + evt.ip.toString());
 
   // Only schedule NTP sync when we do need it.
   if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
