@@ -33,6 +33,7 @@ bool ntpInitialSync = false;
 unsigned int ntpErrors = 0;
 double ntpStartTime = 0;
 double ntpWaitTime  = 0;
+ESP8266WiFiMulti* WiFiMulti;
 
 void ntpSyncEventHandler(NTPSyncEvent_t error) {
   if (error) {
@@ -140,15 +141,15 @@ void setup() {
   connectEvent    = WiFi.onStationModeConnected(wifiConnected);
   disconnectEvent = WiFi.onStationModeDisconnected(wifiDisconnected);
 
-  ESP8266WiFiMulti WiFiMulti;
+  WiFiMulti = new ESP8266WiFiMulti();
   WifiConfig wifiConfig;
   for(int itCreds = 0 ; itCreds < wifiConfig.creds.size(); itCreds++ ) {
     WifiCreds c = wifiConfig.creds[itCreds];
     if (c.pass().length() > 0) {
-      WiFiMulti.addAP(c.ssid().c_str(), c.pass().c_str());
+      WiFiMulti->addAP(c.ssid().c_str(), c.pass().c_str());
       DEBUG_SERIAL("WifiConfig: Adding WiFi for protected " + c.ssid());
     } else {
-      WiFiMulti.addAP(c.ssid().c_str());
+      WiFiMulti->addAP(c.ssid().c_str());
       DEBUG_SERIAL("WifiConfig: Adding WiFi for open " + c.ssid());
     }
   }
@@ -157,6 +158,17 @@ void setup() {
 }
 
 void loop() {
+  // Let's take a few (extra) seconds and make sure brand new devices can connect.
+  // Doing that always will cripple boot time:
+  //  - with WiFiMulti->run() checking, we get IP ~7 secs after boot
+  //  - without, we get IP ~2.9 secs after boot
+  if (sleepWakeCycles == 0) {
+    if (WiFiMulti->run() != WL_CONNECTED) {
+      delay(50);
+      return;
+    }
+  }
+
   // Wait for NTP sync at least 3*45 secs
   // If we get nothing, go to sleep. Let's hope it is a transient issue.
   String timeNow = date_ISO8601(now());
@@ -207,7 +219,7 @@ void loop() {
   }
 
   // with WAKE_RF_DEFAULT, deep sleep current ~8.2mA
-  // with WAKE_NO_RFCALL, deep sleep current ~8.2mA
+  // with WAKE_NO_RFCAL, deep sleep current ~8.2mA
   // with WAKE_RF_DISABLED, no wifi on return from sleep, and deep sleep current ~8.2mA
   ESP.deepSleep(nextInterval * slowDownFactor * 1e6, WAKE_NO_RFCAL);
 

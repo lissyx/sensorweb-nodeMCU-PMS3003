@@ -17,7 +17,7 @@ String JsonConfig::readConfigFile(String file) {
   SPIFFS.begin();
 
   if (!SPIFFS.exists(file)) {
-    DEBUG_SERIAL("JsonConfig: No wifi config file '" + file + "', aborting.");
+    DEBUG_SERIAL("JsonConfig: No such config file '" + file + "', aborting.");
     SPIFFS.end();
     return "";
   }
