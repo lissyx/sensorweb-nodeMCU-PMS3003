@@ -164,7 +164,8 @@ void loop() {
   //  - without, we get IP ~2.9 secs after boot
   if (sleepWakeCycles == 0) {
     if (WiFiMulti->run() != WL_CONNECTED) {
-      delay(50);
+      DEBUG_SERIAL("WifiConfig: not connected, waiting ...");
+      delay(500);
       return;
     }
   }
