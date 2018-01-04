@@ -90,7 +90,7 @@ void wifiConnected(WiFiEventStationModeConnected evt) {
 }
 
 void wifiDisconnected(WiFiEventStationModeDisconnected evt) {
-  DEBUG_SERIAL("Disconnected from SSID: " + evt.ssid);
+  DEBUG_SERIAL("Disconnected from SSID: " + evt.ssid + "; reason: " + evt.reason);
   DEBUG_SERIAL("Reason: " + evt.reason);
 
   if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
@@ -107,7 +107,11 @@ void setup() {
   WiFi.mode(WIFI_STA);
 
   // Measure how much power we can save there ...
-  // WiFi.setPhyMode(WIFI_PHY_MODE_11G);
+  // According to ESP docs:
+  // 802.11b: TX ~170mA, RX ~50mA
+  // 802.11g: TX ~140mA, RX ~56mA
+  // 802.11n: TX ~120mA, RX ~56mA
+  WiFi.setPhyMode(WIFI_PHY_MODE_11N);
 
   const rst_info * resetInfo = system_get_rst_info();
   if (resetInfo->reason == REASON_DEEP_SLEEP_AWAKE) {
