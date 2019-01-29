@@ -2,12 +2,12 @@
 #define PM25_NODEMCU_DEBUG_H
 
 #define DEBUG_SERIAL(m) printDebugMessage(m)
-const char* DEBUG_IP_TARGET = "239.0.0.1";
-const int   DEBUG_IP_PORT   = 8899;
+// const char* DEBUG_IP_TARGET = "239.0.0.1";
+// const int   DEBUG_IP_PORT   = 8899;
 
 // #define DEBUG_SERIAL(m)
-// const char* DEBUG_IP_TARGET = "";
-// const int   DEBUG_IP_PORT   = 0;
+const char* DEBUG_IP_TARGET = "";
+const int   DEBUG_IP_PORT   = 0;
 
 void printDebugMessage(String msg) {
   Serial.println(msg);

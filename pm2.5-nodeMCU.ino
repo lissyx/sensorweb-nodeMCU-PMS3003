@@ -39,8 +39,15 @@ ESP8266WiFiMulti* WiFiMulti;
 
 void ntpSyncEventHandler(NTPSyncEvent_t error) {
   if (!ntpRunning) {
-    serialUdpDebug("NTPSyncEvent: Stale event, expected with dayLight=true");
-    // return;
+    serialUdpDebug("NTPSyncEvent: Ignoring stale event, expected with dayLight=true");
+    /**
+     * 23:07:52.019 -> NTPSyncEvent: Stale event, expected with dayLight=true
+     * 23:07:52.085 -> NTPSyncEvent: 07:28:16 07/02/2036
+     * 23:07:52.119 -> NTPSyncEvent: actualRuntime=2.27 -- bootTime=325
+     * 23:07:52.152 -> NTPSyncEvent: actualSystemTime=2036-02-07T07:28:16.000+01:00 -- expectedSystemTime=2019-01-29T23:08:08.000+01:00
+     * 23:07:52.285 -> NTPSyncEvent: deltaTime=-537178804.94200 => slowDownFactor=-1790595.01647
+     */
+    return;
   }
 
   ntpRunning = false;
