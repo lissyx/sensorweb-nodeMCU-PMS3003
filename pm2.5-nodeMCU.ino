@@ -39,8 +39,8 @@ ESP8266WiFiMulti* WiFiMulti;
 
 void ntpSyncEventHandler(NTPSyncEvent_t error) {
   if (!ntpRunning) {
-    serialUdpDebug("NTPSyncEvent: Stale event");
-    return;
+    serialUdpDebug("NTPSyncEvent: Stale event, expected with dayLight=true");
+    // return;
   }
 
   ntpRunning = false;
@@ -84,10 +84,11 @@ void startNtp() {
   if (!ntpRunning) {
     ntpRunning = true;
     NtpConfig* ntpConfig = NtpConfig::getInstance();
+    NTP.onNTPSyncEvent(ntpSyncEventHandler);
     NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
+    NTP.setInterval(ntpFirstSync, ntpInterval);
     serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
     ntpStartTime = millis();
-    NTP.setInterval(ntpFirstSync, ntpInterval);
   } else {
     serialUdpIntDebug("NTP: not starting because ntpRunning=true");
   }
@@ -159,6 +160,12 @@ void setup() {
   PM_SERIAL.begin(9600);
   DEBUG_SERIAL("Booting ...");
 
+#if LWIP_IPV6
+  DEBUG_SERIAL("IPV6 is enabled\n");
+#else
+  DEBUG_SERIAL("IPV6 is not enabled\n");
+#endif
+
   configure_leds();
   configure_pms3003_pin();
 
@@ -170,7 +177,7 @@ void setup() {
   disconnectEvent = WiFi.onStationModeDisconnected(wifiDisconnected);
 
   ntpRunning = false;
-  NTP.onNTPSyncEvent(ntpSyncEventHandler);
+  NTP.stop();
 
   WiFiMulti = new ESP8266WiFiMulti();
   WifiConfig wifiConfig;
