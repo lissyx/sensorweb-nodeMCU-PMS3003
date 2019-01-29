@@ -11,7 +11,7 @@ Good Known Setup
  - Arduino IDE 1.8.8
  - ESP8266 Package v2.4.2
  - ArduinoJson v5.13.5
- - NtpClientLib v2.0.5
+ - NtpClientLib v2.5.1
  - Time v1.5
  - WiFiManager v0.14
  - ESP8266TrueRandom (any version?)
@@ -23,7 +23,7 @@ Ensure to configure board in Arduino IDE as:
  - 80MHz
  - Flash
  - 4M (3M SPIFFS)
- - v1.4 (Compile from source or Higher Bandwidth)
+ - v2 Lower Memory
 
 Configuration
 =============

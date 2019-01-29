@@ -30,12 +30,21 @@ unsigned long startupMillis = 0;
 #include "RTC.h"
 
 bool ntpInitialSync = false;
+bool readyForNTP = false;
+bool ntpRunning = false;
 unsigned int ntpErrors = 0;
 double ntpStartTime = 0;
 double ntpWaitTime  = 0;
 ESP8266WiFiMulti* WiFiMulti;
 
 void ntpSyncEventHandler(NTPSyncEvent_t error) {
+  if (!ntpRunning) {
+    serialUdpDebug("NTPSyncEvent: Stale event");
+    return;
+  }
+
+  ntpRunning = false;
+
   if (error) {
     ntpErrors += 1;
     if (error == noResponse) {
@@ -71,17 +80,30 @@ void ntpSyncEventHandler(NTPSyncEvent_t error) {
   }
 }
 
+void startNtp() {
+  if (!ntpRunning) {
+    ntpRunning = true;
+    NtpConfig* ntpConfig = NtpConfig::getInstance();
+    NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
+    serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
+    ntpStartTime = millis();
+    NTP.setInterval(ntpFirstSync, ntpInterval);
+  } else {
+    serialUdpIntDebug("NTP: not starting because ntpRunning=true");
+  }
+}
+
+void stopNtp() {
+  ntpRunning = false;
+  NTP.stop();
+}
+
 void wifiHasIpAddress(WiFiEventStationModeGotIP evt) {
   serialUdpIntDebug("UP: " + VERSION + ":" + (BUILD_DATE + " " + BUILD_TIME) + "@" + evt.ip.toString());
 
   // Only schedule NTP sync when we do need it.
   if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
-    NtpConfig* ntpConfig = NtpConfig::getInstance();
-    NTP.begin(ntpConfig->ntpServer, ntpConfig->ntpTZOffset, ntpConfig->ntpDayLight);
-    serialUdpIntDebug("NTP: NTP.begin(" + ntpConfig->ntpServer + ", " + ntpConfig->ntpTZOffset + ", " + ntpConfig->ntpDayLight + ")");
-    ntpStartTime = millis();
-    NTP.onNTPSyncEvent(ntpSyncEventHandler);
-    NTP.setInterval(ntpFirstSync, ntpInterval);
+    readyForNTP = true;
   }
 }
 
@@ -93,8 +115,10 @@ void wifiDisconnected(WiFiEventStationModeDisconnected evt) {
   DEBUG_SERIAL("Disconnected from SSID: " + evt.ssid + "; reason: " + evt.reason);
   DEBUG_SERIAL("Reason: " + evt.reason);
 
+  readyForNTP = false;
+
   if (sleepWakeCycles <= sleepWakeCyclesSlowDownCompute) {
-    NTP.stop();
+    stopNtp();
   }
 }
 
@@ -145,6 +169,9 @@ void setup() {
   connectEvent    = WiFi.onStationModeConnected(wifiConnected);
   disconnectEvent = WiFi.onStationModeDisconnected(wifiDisconnected);
 
+  ntpRunning = false;
+  NTP.onNTPSyncEvent(ntpSyncEventHandler);
+
   WiFiMulti = new ESP8266WiFiMulti();
   WifiConfig wifiConfig;
   for(int itCreds = 0 ; itCreds < wifiConfig.creds.size(); itCreds++ ) {
@@ -172,6 +199,10 @@ void loop() {
       delay(500);
       return;
     }
+  }
+
+  if (readyForNTP) {
+    startNtp();
   }
 
   // Wait for NTP sync at least 3*45 secs

@@ -3,7 +3,7 @@
 
 // #define ENABLE_LEDS 1
 
-#define VERSION String("1.1")
+#define VERSION String("1.2")
 #define BUILD_DATE String(__DATE__)
 #define BUILD_TIME String(__TIME__)
 
