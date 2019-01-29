@@ -27,7 +27,7 @@ double getCurrentExecutionTime() {
 #define DEBUG_ENABLED (strlen(DEBUG_IP_TARGET) > 0 && DEBUG_IP_PORT > 0)
 void sendDebugMessage(String msg, bool withDelay = true) {
   if (!DEBUG_ENABLED) {
-    DEBUG_SERIAL("UDP Debug not enabled");
+    // DEBUG_SERIAL("UDP Debug not enabled");
     return;
   }
 
@@ -62,4 +62,3 @@ void sendDebugMessage(String msg, bool withDelay = true) {
 }
 
 #endif // PM25_NODEMCU_DEBUG_H
-
