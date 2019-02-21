@@ -95,13 +95,13 @@ String AirCasting::makeFixedSession(String uuid) {
   session["notes"]      = session.createNestedObject("notes");
   session["title"]      = getSessionTitle();
   session["tag_list"]   = getSessionTags();
-  session["descrition"] = getSessionDescription();
+  session["description"] = getSessionDescription();
   session["calibration"]  = 0;
   session["contribute"]   = true;
   session["os_version"]   = "ESP8266 0.1";
   session["phone_model"]  = "NodeMCU-1.0";
   session["offset_60_db"] = 0,
-  session["location"]     = this->conf->location;
+  // session["location"]     = this->conf->location;
   session["deleted"]      = false;
   session["start_time"]      = date_ISO8601(now());
   session["end_time"]        = date_ISO8601(now() + 60);
