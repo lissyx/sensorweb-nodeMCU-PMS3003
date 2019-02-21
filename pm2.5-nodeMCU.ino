@@ -221,7 +221,7 @@ void loop() {
 
   // Wait for NTP sync at least 3*45 secs
   // If we get nothing, go to sleep. Let's hope it is a transient issue.
-  String timeNow = date_ISO8601(now());
+  String timeNow = date_ISO8601(now(), false, false);
   if (!ntpInitialSync && (ntpErrors < 3)) {
     serialUdpDebug("Loop: no NTP initial sync, waiting ... sleepWakeCycles=" + String(sleepWakeCycles) + " ntpErrors=" + String(ntpErrors));
     delay(1250);

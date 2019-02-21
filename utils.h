@@ -6,7 +6,7 @@ const unsigned long bootTime = 250 + 75;
 
 // Will rely on ntpConfig->ntpTZOffset to compute proper UTC time
 // e.g. 2017-01-26 at 15:00:00 Paris Time, it is 2017-01-26T15:00:00.000Z == 2017-01-26T15:00:00.000+01:00
-String date_ISO8601(time_t date, bool asUTC = false) {
+String date_ISO8601(time_t date, bool asUTC = false, bool withTZ = true) {
   char iso8601[30];
 
   if (asUTC) {
@@ -19,7 +19,11 @@ String date_ISO8601(time_t date, bool asUTC = false) {
     signed int tzOffsetMin = (NtpConfig::getInstance()->ntpTZOffset) * SECS_PER_MIN;
     unsigned int tzH = abs(floor(tzOffsetMin / SECS_PER_MIN));
     unsigned int tzM = abs(floor(tzOffsetMin % SECS_PER_MIN));
-    sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000%c%02d:%02d", year(date), month(date), day(date), hour(date), minute(date), second(date), tzSign, tzH, tzM);
+    if (withTZ) {
+      sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000%c%02d:%02d", year(date), month(date), day(date), hour(date), minute(date), second(date), tzSign, tzH, tzM);
+    } else {
+      sprintf(iso8601, "%04d-%02d-%02dT%02d:%02d:%02d.000", year(date), month(date), day(date), hour(date), minute(date), second(date));
+    }
   }
 
   return String(iso8601);
